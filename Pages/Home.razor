@@ -1,0 +1,43 @@
+﻿@page "/"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@using NovaPropostaAnaliseCreditoPWA.Models
+
+<PageTitle>Nova Proposta Para Analise De Credito</PageTitle>
+
+@if (configuraPropostaResponse == null)
+{
+    <p><em>Carregando configurações...</em></p>
+}
+else
+{
+    if (configuraPropostaResponse.Coletar.Fase1.Promotor)
+    {
+        //Redirecionar para a página de ColetarCpfPromotor
+        Navigation.NavigateTo("/ColetarCpfPromotor");
+    }
+    <h1>Efetue uma nova proposta de analise de credito</h1>
+}
+
+@code {
+    private ConfiguraPropostaResponse? configuraPropostaResponse;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var apiUrl = Configuration["ApiBaseUrl"] + "/api/private/propostas/configura";
+
+        var requestData = new
+        {
+            CodOperadora = Configuration["CodOperadora"],
+            ChaveIntegrador = Configuration["ChaveIntegrador"]
+        };
+
+        var response = await Http.PostAsJsonAsync(apiUrl, requestData);
+        if (response.IsSuccessStatusCode)
+        {
+            configuraPropostaResponse = await response.Content.ReadFromJsonAsync<ConfiguraPropostaResponse>();
+        }
+    }
+     
+}

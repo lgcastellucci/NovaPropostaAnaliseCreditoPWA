@@ -1,0 +1,54 @@
+﻿@page "/ColetarCpfPromotor"
+@inject AppState AppStateData
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@using NovaPropostaAnaliseCreditoPWA.Models
+
+<PageTitle>Nova Proposta Para Analise De Credito</PageTitle>
+
+<div class="text-center">
+    <h1 class="display-4">Coletar CPF do Promotor</h1>
+</div>
+
+<div class="form-group">
+    <label>CPF do Promotor</label>
+    <input type="text" class="form-control" @bind="AppStateData.cpfPromotor" required>
+</div>
+
+<div class="form-group">
+    <br />
+</div>
+
+<div class="form-group d-flex justify-content-end">
+    <button class="btn btn-primary" @onclick="SubmitForm">Enviar</button>
+</div>
+
+@code {
+    private PesquisaPromotorResponse? pesquisaPromotorResponse;
+
+    private async Task SubmitForm()
+    {
+        // Lógica para enviar o CPF do promotor
+
+        var apiUrl = Configuration["ApiBaseUrl"] + "/api/private/propostas/pesquisa/promotor";
+
+        var requestData = new
+        {
+            CodOperadora = Configuration["CodOperadora"],
+            ChaveIntegrador = Configuration["ChaveIntegrador"],
+            CPF = AppStateData.cpfPromotor
+        };
+
+        var response = await Http.PostAsJsonAsync(apiUrl, requestData);
+        if (response.IsSuccessStatusCode)
+        {
+            pesquisaPromotorResponse = await response.Content.ReadFromJsonAsync<PesquisaPromotorResponse>();
+            if (pesquisaPromotorResponse != null)
+                if (pesquisaPromotorResponse.Sucesso)
+                    Navigation.NavigateTo("/ColetarLojasProximas");
+        }
+
+    }
+
+}

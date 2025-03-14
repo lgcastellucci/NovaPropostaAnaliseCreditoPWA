@@ -1,0 +1,87 @@
+﻿@page "/ColetarVenctoEntrega"
+@inject AppState AppStateData
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@using NovaPropostaAnaliseCreditoPWA.Models
+
+<PageTitle>Nova Proposta Para Analise De Credito</PageTitle>
+
+<div class="text-center">
+    <h1 class="display-4">Coletar vencimento e local de entrega</h1>
+</div>
+
+<div class="form-group">
+    <label>Proposta</label>
+    <input type="text" class="form-control" @bind="AppStateData.iniciaPropostaResponse.Proposta" readonly>
+</div>
+
+<div class="form-group">
+    <label>Dias de vencimento disponiveis</label>
+    <select class="form-control" @bind="AppStateData.vencimentoDia">
+        @if (AppStateData.iniciaPropostaResponse.VencimentosDia != null)
+        {
+            @foreach (var dia in AppStateData.iniciaPropostaResponse.VencimentosDia)
+            {
+                <option value="@dia">
+                    @dia
+                </option>
+            }
+        }
+    </select>
+</div>
+
+<div class="form-group">
+    <label>Locais de entrega</label>
+    <select class="form-control" @bind="AppStateData.codEstabelecimentoEntrega">
+        @if (AppStateData.iniciaPropostaResponse.LocaisEntrega != null)
+        {
+            @foreach (var localEntrega in AppStateData.iniciaPropostaResponse.LocaisEntrega)
+            {
+                <option value="@localEntrega.CodEstabelecimento">
+                    @localEntrega.Descricao - @localEntrega.Endereco.Logradouro, @localEntrega.Endereco.Numero, @localEntrega.Endereco.Bairro, @localEntrega.Endereco.Municipio - @localEntrega.Endereco.UF
+                </option>
+            }
+        }
+    </select>
+</div>
+
+
+<div class="form-group">
+    <br />
+</div>
+
+<div class="form-group d-flex justify-content-end">
+    <button class="btn btn-primary" @onclick="SubmitForm">Enviar</button>
+</div>
+
+@code {
+    private ConfirmaPropostaResponse? confirmaPropostaResponse;
+
+    private async Task SubmitForm()
+    {
+        var apiUrl = Configuration["ApiBaseUrl"] + "/api/private/propostas/confirma";
+        var requestData = new
+        {
+            CodOperadora = Configuration["CodOperadora"],
+            ChaveIntegrador = Configuration["ChaveIntegrador"],
+            Proposta = AppStateData.iniciaPropostaResponse.Proposta,
+            CPF = AppStateData.cpf,
+            VencimentoDia = AppStateData.vencimentoDia,
+            CodEstabelecimento = AppStateData.codEstabelecimentoEntrega
+        };
+
+        var response = await Http.PostAsJsonAsync(apiUrl, requestData);
+        if (response.IsSuccessStatusCode)
+        {
+            confirmaPropostaResponse = await response.Content.ReadFromJsonAsync<ConfirmaPropostaResponse>();
+            if ((confirmaPropostaResponse != null) && (confirmaPropostaResponse.Sucesso))
+            {
+                AppStateData.confirmaPropostaResponse = confirmaPropostaResponse;
+                Navigation.NavigateTo("/ColetarCodigoValidador");
+            }
+        }
+
+    }
+
+}

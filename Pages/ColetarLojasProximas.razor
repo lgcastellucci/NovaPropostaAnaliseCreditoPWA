@@ -1,0 +1,69 @@
+﻿@page "/ColetarLojasProximas"
+@inject AppState AppStateData
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@using NovaPropostaAnaliseCreditoPWA.Models
+
+<PageTitle>Nova Proposta Para Analise De Credito</PageTitle>
+
+<div class="text-center">
+    <h1 class="display-4">Coletar Lojas Proximas</h1>
+</div>
+
+<div class="form-group">
+    <label>Selecione uma loja</label>
+    <select class="form-control" @bind="AppStateData.codEstabelecimento">
+        @if (lojasProximasResponse?.Estabelecimentos != null)
+        {
+            @foreach (var loja in lojasProximasResponse.Estabelecimentos)
+            {
+                <option value="@loja.CodEstabelecimento">
+                    @loja.Descricao - @loja.Endereco.Logradouro, @loja.Endereco.Numero, @loja.Endereco.Bairro, @loja.Endereco.Municipio - @loja.Endereco.UF
+                </option>
+            }
+        }
+    </select>
+</div>
+
+<div class="form-group">
+    <br />
+</div>
+
+<div class="form-group d-flex justify-content-end">
+    <button class="btn btn-primary" @onclick="SubmitForm">Enviar</button>
+</div>
+
+@code {
+    private LojasProximasResponse? lojasProximasResponse;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var apiUrl = Configuration["ApiBaseUrl"] + "/api/private/propostas/pesquisa/estabelecimentos";
+
+        var requestData = new
+        {
+            CodOperadora = Configuration["CodOperadora"],
+            ChaveIntegrador = Configuration["ChaveIntegrador"],
+            Latitude = "-22.7256039",
+            Longitude = "-47.6487915"
+        };
+
+        var response = await Http.PostAsJsonAsync(apiUrl, requestData);
+        if (response.IsSuccessStatusCode)
+        {
+            lojasProximasResponse = await response.Content.ReadFromJsonAsync<LojasProximasResponse>();
+
+            if (lojasProximasResponse?.Estabelecimentos != null && lojasProximasResponse.Estabelecimentos.Count > 0)
+            {
+                AppStateData.codEstabelecimento = lojasProximasResponse.Estabelecimentos[0].CodEstabelecimento;
+            }
+        }
+    }
+
+    private async Task SubmitForm()
+    {
+        Navigation.NavigateTo("/ColetarProposta");
+    }
+
+}
