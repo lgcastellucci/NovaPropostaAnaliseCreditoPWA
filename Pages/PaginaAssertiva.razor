@@ -1,0 +1,57 @@
+﻿@page "/PaginaAssertiva"
+@inject AppState AppStateData
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@using NovaPropostaAnaliseCreditoPWA.Models
+
+<PageTitle>Nova Proposta Para Analise De Credito</PageTitle>
+
+<div class="text-center">
+    <h1 class="display-4">Pagina Assertiva - Validar dados</h1>
+</div>
+<div class="form-group">
+    <label>Proposta</label>
+    <input type="text" class="form-control" @bind="AppStateData.iniciaPropostaResponse.Proposta" readonly>
+</div>
+<div class="form-group">
+    <label>Assertiva ID</label>
+    <input type="text" class="form-control" @bind="AppStateData.assertivaPedidoID" required>
+</div>
+<div class="form-group">
+    <br />
+</div>
+<div class="form-group d-flex justify-content-end">
+    <button class="btn btn-primary" @onclick="SubmitForm">Enviar</button>
+</div>
+
+
+@code {
+    private FinalizaPropostaResponse? finalizaPropostaResponse;
+
+    private async Task SubmitForm()
+    {
+        var apiUrl = Configuration["ApiBaseUrl"] + "/api/private/propostas/finaliza/" + Configuration["CodOperadora"] + "/assertiva";
+        var requestData = new
+        {
+            dados = new
+            {
+                entidade = "PEDIDO",
+                status = "FINALIZADO",
+                id = AppStateData.assertivaPedidoID
+            }
+        };
+
+        var response = await Http.PostAsJsonAsync(apiUrl, requestData);
+        if (response.IsSuccessStatusCode)
+        {
+            finalizaPropostaResponse = await response.Content.ReadFromJsonAsync<FinalizaPropostaResponse>();
+            if ((finalizaPropostaResponse != null) && (finalizaPropostaResponse.Sucesso))
+            {
+                Navigation.NavigateTo("/PaginaFinal");
+            }
+        }
+
+    }
+
+}

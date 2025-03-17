@@ -17,6 +17,11 @@ else
         //Redirecionar para a página de ColetarCpfPromotor
         Navigation.NavigateTo("/ColetarCpfPromotor");
     }
+    else if (configuraPropostaResponse.Coletar.Fase1.Estabelecimento)
+    {
+        //Redirecionar para a página de ColetarLojasProximas
+        Navigation.NavigateTo("/ColetarLojasProximas");
+    }
     <h1>Efetue uma nova proposta de analise de credito</h1>
 }
 

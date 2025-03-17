@@ -21,15 +21,16 @@
 </div>
 
 <div class="form-group d-flex justify-content-end">
-    <button class="btn btn-primary" @onclick="SubmitForm">Enviar</button>
+    <button class="btn btn-primary" @onclick="SubmitForm" disabled="@isSubmitting">Enviar</button>
 </div>
 
 @code {
     private PesquisaPromotorResponse? pesquisaPromotorResponse;
+    private bool isSubmitting = false;
 
     private async Task SubmitForm()
     {
-        // Lógica para enviar o CPF do promotor
+        isSubmitting = true;
 
         var apiUrl = Configuration["ApiBaseUrl"] + "/api/private/propostas/pesquisa/promotor";
 
@@ -49,6 +50,7 @@
                     Navigation.NavigateTo("/ColetarLojasProximas");
         }
 
+        isSubmitting = false;
     }
 
 }

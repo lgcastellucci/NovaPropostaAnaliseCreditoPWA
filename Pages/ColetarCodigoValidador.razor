@@ -1,0 +1,85 @@
+﻿@page "/ColetarCodigoValidador"
+@inject AppState AppStateData
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@using NovaPropostaAnaliseCreditoPWA.Models
+
+<PageTitle>Nova Proposta Para Analise De Credito</PageTitle>
+
+<div class="text-center">
+    <h1 class="display-4">Codigo Validador</h1>
+</div>
+<div class="form-group">
+    <label>Proposta</label>
+    <input type="text" class="form-control" @bind="AppStateData.iniciaPropostaResponse.Proposta" readonly>
+</div>
+<div class="form-group">
+    <label>Codigo Validador</label>
+    <input type="text" class="form-control" @bind="AppStateData.codigoValidador" required>
+</div>
+<div class="form-group">
+    <br />
+</div>
+<div class="form-group d-flex justify-content-end">
+    <button class="btn btn-primary" @onclick="SubmitForm">Enviar</button>
+</div>
+
+
+<div class="form-group">
+    <br />
+</div>
+
+
+<div class="form-group">
+    <label>Se desejar, altere o telefone:</label>
+</div>
+<div class="form-group">
+    <br />
+</div>
+<div class="form-group">
+    <label >Celular</label>
+    <input type="text" class="form-control" @bind="AppStateData.telefone">
+</div>
+<div class="form-group">
+    <br />
+</div>
+<div class="form-group d-flex justify-content-end">
+    <button class="btn btn-primary" @onclick="SubmitFormPhone">Enviar</button>
+</div>
+
+
+@code {
+    private CriaFluxoResponse? criaFluxoResponse;
+
+    private async Task SubmitForm()
+    {
+        var apiUrl = Configuration["ApiBaseUrl"] + "/api/private/propostas/criaFluxo";
+        var requestData = new
+        {
+            CodOperadora = Configuration["CodOperadora"],
+            ChaveIntegrador = Configuration["ChaveIntegrador"],
+            Proposta = AppStateData.iniciaPropostaResponse.Proposta,
+            CPF = AppStateData.cpf,
+            VencimentoDia = AppStateData.vencimentoDia,
+            CodigoValidador = AppStateData.codigoValidador
+        };
+
+        var response = await Http.PostAsJsonAsync(apiUrl, requestData);
+        if (response.IsSuccessStatusCode)
+        {
+            criaFluxoResponse = await response.Content.ReadFromJsonAsync<CriaFluxoResponse>();
+            if ((criaFluxoResponse != null) && (criaFluxoResponse.Sucesso))
+            {
+                Navigation.NavigateTo("/PaginaAssertiva");
+            }
+        }
+
+    }
+
+    private async Task SubmitFormPhone()
+    {
+      
+
+    }
+}
